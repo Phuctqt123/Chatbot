@@ -84,6 +84,10 @@ function renameActive(title) {
     renderList();
     save();
 }
+function isAtBottom() {
+    const messagesEl = $('.messages');
+    return Math.abs(messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 1;
+}
 function pushMsg(role, content) {
     const c = currentChat();
     if (!c) return;
@@ -93,7 +97,7 @@ function pushMsg(role, content) {
 }
 
 
-async function pushMsgWithTyping(role, content, speed = 20) {
+async function pushMsgWithTyping(role, content, speed = 10) {
     const c = currentChat();
     if (!c) return;
     const sec = document.createElement('div');
@@ -105,50 +109,68 @@ async function pushMsgWithTyping(role, content, speed = 20) {
     const wrap = $('#msgContainer');
     wrap.appendChild(sec);
     const contentEl = sec.querySelector('.content');
+    const messagesEl = $('.messages');
+
+    // Kiểm tra xem người dùng có đang ở cuối danh sách tin nhắn hay không
+    const isAtBottom = () => Math.abs(messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 1;
 
     for (let i = 0; i < content.length; i++) {
         contentEl.textContent += content[i];
-        // scroll tới tin nhắn mới
-        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Chỉ cuộn nếu người dùng đang ở cuối
+        if (isAtBottom()) {
+            sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         await new Promise(r => setTimeout(r, speed));
     }
 
-    // lưu tin nhắn vào state
+    // Lưu tin nhắn vào state
     c.messages.push({ id: uid(), role, content });
     save();
 }
 async function handleSend() {
-  const ta = $('#input');
-  const text = ta.value.trim();
-  if (!text || state.sending) return;
+    const ta = $('#input');
+    const text = ta.value.trim();
+    if (!text || state.sending) return;
 
-  let chat = currentChat();
-  const isNewChat = !chat || chat.messages.length === 0;
+    let chat = currentChat();
+    const isNewChat = !chat || chat.messages.length === 0;
 
-  if (!chat) {
-    createChat();
-    chat = currentChat();
-  }
+    if (!chat) {
+        createChat();
+        chat = currentChat();
+    }
 
-  ta.value = '';
-  autosize(ta);
-  state.sending = true;
-  pushMsg('user', text);
-  updateTokenCount(text);
+    ta.value = '';
+    autosize(ta);
+    state.sending = true;
+    pushMsg('user', text);
+    updateTokenCount(text);
 
-  if (isNewChat && chat) {
-    renameActive(text);
-  }
+    if (isNewChat && chat) {
+        renameActive(text);
+    }
 
-  try {
-    const reply = await sendMessage(text);
-    await pushMsgWithTyping('assistant', reply);
-  } catch (error) {
-    console.error("Error sending message:", error);
-    pushMsg('assistant', 'Đã có lỗi xảy ra, vui lòng thử lại.');
-  } finally {
-    state.sending = false;
-  }
+    // Thêm loading dots
+    const wrap = $('#msgContainer');
+    const loading = document.createElement('div');
+    loading.className = 'section ai';
+    loading.innerHTML = `<div class="bubble ai"><div class="avatar">✨</div><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div></div>`;
+    wrap.appendChild(loading);
+    if (isAtBottom()) {
+        loading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    try {
+        const reply = await sendMessage(text);
+        updateTokenCount(reply);
+        wrap.removeChild(loading); // Xóa loading dots
+        await pushMsgWithTyping('assistant', reply);
+    } catch (error) {
+        console.error("Error sending message:", error);
+        wrap.removeChild(loading); // Xóa loading dots
+        pushMsg('assistant', 'Đã có lỗi xảy ra, vui lòng thử lại.');
+    } finally {
+        state.sending = false;
+    }
 }
 
 function autosize(el) {
