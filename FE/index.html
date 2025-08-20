@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DemoAI — HTML Only</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app" class="app">
+        <aside id="sidebar" class="sidebar">
+            <div class="side-top">
+                <button id="newChat" class="btn">+ New chat</button>
+            </div>
+            <div id="chatList" class="list"></div>
+        </aside>
+        <button id="closeBtn" class="close-btn" title="Đóng lịch sử"><span>&lt;&lt;</span></button>
+        <main class="main">
+            <header class="topbar">
+                <div class="row">
+                    <button id="menuBtn" class="btn-icon menu" title="Mở lịch sử">☰</button>
+                    <strong id="demoAI" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                        ✨ DemoAI
+                        <div id="dropdown" class="dropdown">
+                            <div class="dropdown-item" data-action="chat">Bắt đầu trò chuyện</div>
+                            <div class="dropdown-item" data-action="ideas">Gợi ý ý tưởng</div>
+                            <div class="dropdown-item" data-action="tasks">Quản lý công việc</div>
+                            <div class="dropdown-item" data-action="learn">Học tập và kiến thức</div>
+                        </div>
+                    </strong>
+                </div>
+                <div class="row">
+                    <span id="tokenCount" class="token-count">Tổng token: 0</span>
+                    <button id="themeBtn" class="btn-icon" title="Chế độ tối/sáng">🌙</button>
+                </div>
+            </header>
+            <section class="messages empty-state">
+                <div class="container" id="msgContainer">
+                    <div class="empty">Hôm nay bạn có ý tưởng gì?</div>
+                </div>
+            </section>
+            <div class="composer-wrap">
+                <div class="composer">
+                    <div class="start-text start-text-large" id="startText">Chúng ta nên bắt đầu từ đâu?</div>
+                    <div class="box">
+                        <textarea id="input" rows="1" placeholder="Nhập tin nhắn... (Enter để gửi, Shift+Enter xuống dòng)"></textarea>
+                        <div class="box-actions">
+                            <div class="box-left">
+                                <button class="btn-icon" id="attachBtn" title="Đính kèm (demo)">➕</button>
+                                <button class="btn-icon" id="regenBtn" title="Tạo lại trả lời (demo)">↻</button>
+                            </div>
+                            <button id="sendBtn" class="btn-send">▲</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
